@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Kiểm Tra Tốc Độ - Giữa Kỳ</title>
+    <title>Game Kiểm Tra Tốc Độ - Nâng Cao</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -27,10 +27,26 @@
             font-size: 18px;
             font-weight: bold;
             color: #444;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
-        /* Khu vực chơi theo yêu cầu: 600px x 400px, nền tùy chỉnh, định vị tuyệt đối */
+        /* Khu vực chọn thời gian tùy chọn */
+        .options-bar {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 15px;
+        }
+
+        .options-bar select {
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        /* Khu vực chơi #arena */
         #arena {
             width: 600px;
             height: 400px;
@@ -40,9 +56,10 @@
             overflow: hidden;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             border: 4px solid #fff;
+            transition: background 0.5s ease;
         }
 
-        /* Mục tiêu: hình tròn nhỏ xuất hiện ngẫu nhiên */
+        /* Mục tiêu hình tròn */
         .target {
             width: 45px;
             height: 45px;
@@ -51,7 +68,7 @@
             position: absolute;
             cursor: pointer;
             box-shadow: 0 0 10px #ff6b81;
-            display: none; /* Ban đầu ẩn đi khi chưa bấm Bắt đầu */
+            display: none;
             transition: transform 0.1s ease;
         }
 
@@ -59,36 +76,53 @@
             transform: scale(0.9);
         }
 
-        /* Nút bắt đầu trò chơi */
-        #start-btn {
+        /* Nhóm các nút điều khiển */
+        .btn-group {
             margin-top: 20px;
-            padding: 12px 30px;
-            font-size: 16px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .custom-btn {
+            padding: 10px 20px;
+            font-size: 15px;
             font-weight: bold;
-            background-color: #2ed573;
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
-            transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: opacity 0.2s, transform 0.1s;
         }
 
-        #start-btn:hover {
-            background-color: #26af5f;
+        .custom-btn:active {
+            transform: scale(0.95);
         }
 
-        #start-btn:disabled {
+        #start-btn { background-color: #2ed573; }
+        #color-btn { background-color: #ffa502; }
+        #player-btn { background-color: #3742fa; }
+
+        .custom-btn:disabled {
             background-color: #a4b0be;
             cursor: not-allowed;
-            box-shadow: none;
         }
     </style>
 </head>
 <body>
 
-    <h1>Game Kiểm Tra Tốc Độ Phản Xạ</h1>
+    <h1>Game Kiểm Tra Tốc Độ Phản Xạ (Nâng Cao)</h1>
     
+    <!-- Tùy chọn thời gian chạy ngược -->
+    <div class="options-bar" id="options-bar">
+        <label for="time-select">Chọn thời gian chơi:</label>
+        <select id="time-select">
+            <option value="15">15 giây</option>
+            <option value="30" selected>30 giây</option>
+            <option value="60">60 giây</option>
+        </select>
+    </div>
+
     <div class="scoreboard">
         <div>Điểm số: <span id="score">0</span></div>
         <div>Thời gian: <span id="timer">30</span> giây</div>
@@ -99,7 +133,12 @@
         <div id="target" class="target"></div>
     </div>
 
-    <button id="start-btn" onclick="startGame()">Bắt đầu trò chơi</button>
+    <!-- Các nút chức năng theo yêu cầu -->
+    <div class="btn-group">
+        <button id="start-btn" class="custom-btn" onclick="startGame()">Bắt đầu trò chơi</button>
+        <button id="color-btn" class="custom-btn" onclick="changeArenaColor()">Đổi màu nền</button>
+        <button id="player-btn" class="custom-btn" onclick="showPlayerInfo()">Người chơi</button>
+    </div>
 
     <script>
         const arena = document.getElementById('arena');
@@ -107,18 +146,35 @@
         const scoreDisplay = document.getElementById('score');
         const timerDisplay = document.getElementById('timer');
         const startBtn = document.getElementById('start-btn');
+        const timeSelect = document.getElementById('time-select');
 
         let score = 0;
         let timeLeft = 30;
         let gameInterval = null;
         let moveTimeout = null;
 
-        // Hàm di chuyển mục tiêu đến vị trí ngẫu nhiên trong #arena (600x400)
+        // 1. Chức năng đổi màu nền ngẫu nhiên cho #arena
+        function changeArenaColor() {
+            const randomColor1 = Math.floor(Math.random()*16777215).toString(16);
+            const randomColor2 = Math.floor(Math.random()*16777215).toString(16);
+            arena.style.background = `linear-gradient(135deg, #${randomColor1}, #${randomColor2})`;
+        }
+
+        // 2. Chức năng hiển thị mã sinh viên khi bấm nút Người chơi
+        function showPlayerInfo() {
+            alert("Mã sinh viên người chơi: 231A010780");
+        }
+
+        // Cập nhật thời gian hiển thị khi người dùng thay đổi lựa chọn trong thẻ select
+        timeSelect.addEventListener('change', () => {
+            timeLeft = parseInt(timeSelect.value);
+            timerDisplay.textContent = timeLeft;
+        });
+
+        // Hàm di chuyển mục tiêu ngẫu nhiên trong #arena
         function moveTarget() {
-            // Kích thước arena: 600x400, trừ đi kích thước target (45px) để không bị tràn ra ngoài
             const maxX = arena.clientWidth - 45;
             const maxY = arena.clientHeight - 45;
-
             const randomX = Math.floor(Math.random() * maxX);
             const randomY = Math.floor(Math.random() * maxY);
 
@@ -126,43 +182,44 @@
             target.style.top = randomY + 'px';
         }
 
-        // Khi click trúng mục tiêu
+        // Click trúng mục tiêu
         target.addEventListener('click', () => {
             if (timeLeft > 0) {
                 score++;
                 scoreDisplay.textContent = score;
-                moveTarget(); // Đổi vị trí ngay lập tức khi click trúng
+                moveTarget();
                 
-                // Reset lại thời gian tự động đổi vị trí nếu người dùng chưa kịp bấm
                 clearTimeout(moveTimeout);
                 moveTimeout = setTimeout(moveTarget, 1000); 
             }
         });
 
-        // Bắt đầu trò chơi
+        // 3. Bắt đầu trò chơi với thời gian chạy ngược tùy chọn
         function startGame() {
-            // Reset trạng thái ban đầu
             score = 0;
-            timeLeft = 30;
+            // Lấy thời gian tùy chọn từ ô select
+            timeLeft = parseInt(timeSelect.value);
             scoreDisplay.textContent = score;
             timerDisplay.textContent = timeLeft;
+            
             startBtn.disabled = true;
+            timeSelect.disabled = true;
             target.style.display = 'block';
 
             moveTarget();
             moveTimeout = setTimeout(moveTarget, 1000);
 
-            // Đồng hồ đếm ngược thời gian (30 giây)
+            // Đồng hồ đếm ngược
             gameInterval = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
 
-                // Khi đồng hồ về 0
                 if (timeLeft <= 0) {
                     clearInterval(gameInterval);
                     clearTimeout(moveTimeout);
-                    target.style.display = 'none'; // Ẩn mục tiêu
-                    startBtn.disabled = false;     // Mở lại nút bắt đầu
+                    target.style.display = 'none';
+                    startBtn.disabled = false;
+                    timeSelect.disabled = false;
                     startBtn.textContent = 'Chơi lại';
                     
                     alert(`Hết giờ! Tổng số điểm đạt được của bạn là: ${score} điểm.`);
